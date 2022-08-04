@@ -1,0 +1,78 @@
+{
+	"name": "sql_repositories",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "data",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "archived",
+				"type": "bit"
+			},
+			{
+				"name": "created_at",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "default_branch",
+				"type": "nvarchar"
+			},
+			{
+				"name": "full_name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "language",
+				"type": "nvarchar"
+			},
+			{
+				"name": "languages_url",
+				"type": "nvarchar"
+			},
+			{
+				"name": "name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "pushed_at",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "size",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "topics",
+				"type": "nvarchar"
+			},
+			{
+				"name": "updated_at",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "unique_id",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "repositories"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,11 @@
+{
+	"name": "vault",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://data-pipeline-vault.vault.azure.net/"
+		}
+	}
+}

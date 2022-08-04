@@ -1,0 +1,90 @@
+{
+	"name": "get_repositories",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "api_repos",
+						"type": "DatasetReference"
+					},
+					"name": "repos"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "sql_repositories",
+						"type": "DatasetReference"
+					},
+					"name": "database"
+				}
+			],
+			"transformations": [
+				{
+					"name": "selectColumns"
+				},
+				{
+					"name": "derriveColumns"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          body as (allow_forking as boolean, archive_url as string, archived as boolean, assignees_url as string, blobs_url as string, branches_url as string, clone_url as string, collaborators_url as string, comments_url as string, commits_url as string, compare_url as string, contents_url as string, contributors_url as string, created_at as string, default_branch as string, deployments_url as string, description as string, disabled as boolean, downloads_url as string, events_url as string, fork as boolean, forks as short, forks_count as short, forks_url as string, full_name as string, git_commits_url as string, git_refs_url as string, git_tags_url as string, git_url as string, has_downloads as boolean, has_issues as boolean, has_pages as boolean, has_projects as boolean, has_wiki as boolean, homepage as string, hooks_url as string, html_url as string, id as integer, is_template as boolean, issue_comment_url as string, issue_events_url as string, issues_url as string, keys_url as string, labels_url as string, language as string, languages_url as string, license as (key as string, name as string, node_id as string, spdx_id as string, url as string), merges_url as string, milestones_url as string, mirror_url as string, name as string, node_id as string, notifications_url as string, open_issues as short, open_issues_count as short, owner as (avatar_url as string, events_url as string, followers_url as string, following_url as string, gists_url as string, gravatar_id as string, html_url as string, id as integer, login as string, node_id as string, organizations_url as string, received_events_url as string, repos_url as string, site_admin as boolean, starred_url as string, subscriptions_url as string, type as string, url as string), permissions as (admin as boolean, maintain as boolean, pull as boolean, push as boolean, triage as boolean), private as boolean, pulls_url as string, pushed_at as string, releases_url as string, size as integer, ssh_url as string, stargazers_count as short, stargazers_url as string, statuses_url as string, subscribers_url as string, subscription_url as string, svn_url as string, tags_url as string, teams_url as string, topics as string[], trees_url as string, updated_at as string, url as string, visibility as string, watchers as short, watchers_count as short, web_commit_signoff_required as boolean),",
+				"          headers as [string,string]",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     httpMethod: 'GET',",
+				"     timeout: 30,",
+				"     requestInterval: 0,",
+				"     paginationRules: ['supportRFC5988' -> 'true'],",
+				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'documentPerLine']) ~> repos",
+				"repos select(mapColumn(",
+				"          archived = body.archived,",
+				"          created_at = body.created_at,",
+				"          default_branch = body.default_branch,",
+				"          full_name = body.full_name,",
+				"          id = body.id,",
+				"          language = body.language,",
+				"          languages_url = body.languages_url,",
+				"          name = body.name,",
+				"          pushed_at = body.pushed_at,",
+				"          size = body.size,",
+				"          topics = body.topics",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectColumns",
+				"selectColumns derive(date = currentDate(),",
+				"          unique_id = concat(toString(currentDate()), full_name)) ~> derriveColumns",
+				"derriveColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          archived as boolean,",
+				"          created_at as timestamp,",
+				"          default_branch as string,",
+				"          full_name as string,",
+				"          id as integer,",
+				"          language as string,",
+				"          languages_url as string,",
+				"          name as string,",
+				"          pushed_at as timestamp,",
+				"          size as integer,",
+				"          topics as string,",
+				"          updated_at as timestamp,",
+				"          unique_id as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> database"
+			]
+		}
+	}
+}

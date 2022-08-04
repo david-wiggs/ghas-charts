@@ -1,0 +1,23 @@
+{
+	"name": "github_rest_api",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://api.github.com",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous",
+			"authHeaders": {
+				"Authorization": {
+					"type": "AzureKeyVaultSecret",
+					"store": {
+						"referenceName": "vault",
+						"type": "LinkedServiceReference"
+					},
+					"secretName": "github-pat"
+				}
+			}
+		}
+	}
+}

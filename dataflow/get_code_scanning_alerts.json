@@ -1,0 +1,114 @@
+{
+	"name": "get_code_scanning_alerts",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "api_code_scanning_alerts",
+						"type": "DatasetReference"
+					},
+					"name": "alerts"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "sql_code_scanning_alerts",
+						"type": "DatasetReference"
+					},
+					"name": "database"
+				}
+			],
+			"transformations": [
+				{
+					"name": "deriveColumns"
+				},
+				{
+					"name": "selectColumns"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          body as (created_at as string, dismissed_at as string, dismissed_by as string, dismissed_comment as string, dismissed_reason as string, fixed_at as string, html_url as string, instances_url as string, most_recent_instance as (analysis_key as string, category as string, classifications as string[], commit_sha as string, environment as string, location as (end_column as integer, end_line as short, path as string, start_column as integer, start_line as short), message as (text as string), ref as string, state as string), number as short, repository as (archive_url as string, assignees_url as string, blobs_url as string, branches_url as string, collaborators_url as string, comments_url as string, commits_url as string, compare_url as string, contents_url as string, contributors_url as string, deployments_url as string, description as string, downloads_url as string, events_url as string, fork as boolean, forks_url as string, full_name as string, git_commits_url as string, git_refs_url as string, git_tags_url as string, hooks_url as string, html_url as string, id as integer, issue_comment_url as string, issue_events_url as string, issues_url as string, keys_url as string, labels_url as string, languages_url as string, merges_url as string, milestones_url as string, name as string, node_id as string, notifications_url as string, owner as (avatar_url as string, events_url as string, followers_url as string, following_url as string, gists_url as string, gravatar_id as string, html_url as string, id as integer, login as string, node_id as string, organizations_url as string, received_events_url as string, repos_url as string, site_admin as boolean, starred_url as string, subscriptions_url as string, type as string, url as string), private as boolean, pulls_url as string, releases_url as string, stargazers_url as string, statuses_url as string, subscribers_url as string, subscription_url as string, tags_url as string, teams_url as string, trees_url as string, url as string), rule as (description as string, id as string, name as string, security_severity_level as string, severity as string, tags as string[]), state as string, tool as (guid as string, name as string, version as string), updated_at as string, url as string),",
+				"          headers as [string,string]",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     httpMethod: 'GET',",
+				"     timeout: 30,",
+				"     requestInterval: 0,",
+				"     paginationRules: ['supportRFC5988' -> 'true'],",
+				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'documentPerLine']) ~> alerts",
+				"selectColumns derive(date = currentDate(),",
+				"          unique_id = concat(toString(currentDate()), repo_full_name)) ~> deriveColumns",
+				"alerts select(mapColumn(",
+				"          created_at = body.created_at,",
+				"          dismissed_at = body.dismissed_at,",
+				"          dismissed_by = body.dismissed_by,",
+				"          dismissed_reason = body.dismissed_reason,",
+				"          fixed_at = body.fixed_at,",
+				"          number = body.number,",
+				"          repo_full_name = body.repository.full_name,",
+				"          repo_id = body.repository.id,",
+				"          rule_id = body.rule.id,",
+				"          rule_name = body.rule.name,",
+				"          security_severity_level = body.rule.security_severity_level,",
+				"          state = body.state,",
+				"          tool_name = body.tool.name,",
+				"          updated_at = body.updated_at",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectColumns",
+				"deriveColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          created_at as string,",
+				"          dismissed_at as string,",
+				"          dismissed_by as string,",
+				"          dismissed_reason as string,",
+				"          fixed_at as string,",
+				"          number as integer,",
+				"          repo_full_name as string,",
+				"          repo_id as integer,",
+				"          rule_id as string,",
+				"          rule_name as string,",
+				"          security_severity_level as string,",
+				"          state as string,",
+				"          tool_name as string,",
+				"          updated_at as string,",
+				"          date as date,",
+				"          unique_id as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          created_at,",
+				"          dismissed_at,",
+				"          dismissed_by,",
+				"          dismissed_reason,",
+				"          fixed_at,",
+				"          number,",
+				"          repo_full_name,",
+				"          repo_id,",
+				"          rule_id,",
+				"          rule_name,",
+				"          security_severity_level,",
+				"          state,",
+				"          tool_name,",
+				"          updated_at,",
+				"          date,",
+				"          unique_id",
+				"     )) ~> database"
+			]
+		}
+	}
+}

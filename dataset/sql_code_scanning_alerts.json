@@ -1,0 +1,84 @@
+{
+	"name": "sql_code_scanning_alerts",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "data",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "created_at",
+				"type": "nvarchar"
+			},
+			{
+				"name": "dismissed_at",
+				"type": "nvarchar"
+			},
+			{
+				"name": "dismissed_by",
+				"type": "nvarchar"
+			},
+			{
+				"name": "dismissed_reason",
+				"type": "nvarchar"
+			},
+			{
+				"name": "fixed_at",
+				"type": "nvarchar"
+			},
+			{
+				"name": "number",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "repo_full_name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "repo_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "rule_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "rule_name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "security_severity_level",
+				"type": "nvarchar"
+			},
+			{
+				"name": "state",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tool_name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "updated_at",
+				"type": "nvarchar"
+			},
+			{
+				"name": "date",
+				"type": "date"
+			},
+			{
+				"name": "unique_id",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "code_scanning_alerts"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
