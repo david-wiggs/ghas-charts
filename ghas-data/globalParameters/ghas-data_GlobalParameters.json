@@ -1,0 +1,6 @@
+{
+	"github_organization": {
+		"type": "string",
+		"value": "octodemo"
+	}
+}

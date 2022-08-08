@@ -1,0 +1,818 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ghas-data"
+		},
+		"data_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'data'"
+		},
+		"vault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://data-pipeline-vault.vault.azure.net/"
+		},
+		"github_rest_api_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.github.com"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/data')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('data_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/vault')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('vault_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sql_code_scanning_alerts')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "created_at",
+						"type": "nvarchar"
+					},
+					{
+						"name": "dismissed_at",
+						"type": "nvarchar"
+					},
+					{
+						"name": "dismissed_by",
+						"type": "nvarchar"
+					},
+					{
+						"name": "dismissed_reason",
+						"type": "nvarchar"
+					},
+					{
+						"name": "fixed_at",
+						"type": "nvarchar"
+					},
+					{
+						"name": "number",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "repo_full_name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "repo_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "rule_id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "rule_name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "security_severity_level",
+						"type": "nvarchar"
+					},
+					{
+						"name": "state",
+						"type": "nvarchar"
+					},
+					{
+						"name": "tool_name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "updated_at",
+						"type": "nvarchar"
+					},
+					{
+						"name": "date",
+						"type": "date"
+					},
+					{
+						"name": "unique_id",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "code_scanning_alerts"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sql_repositories')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "archived",
+						"type": "bit"
+					},
+					{
+						"name": "created_at",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "default_branch",
+						"type": "nvarchar"
+					},
+					{
+						"name": "full_name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "language",
+						"type": "nvarchar"
+					},
+					{
+						"name": "languages_url",
+						"type": "nvarchar"
+					},
+					{
+						"name": "name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "pushed_at",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "size",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "topics",
+						"type": "nvarchar"
+					},
+					{
+						"name": "updated_at",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "unique_id",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "repositories"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sql_secret_scanning_alerts')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "secret_scanning_alerts"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/github_rest_api')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('github_rest_api_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous",
+					"authHeaders": {
+						"Authorization": {
+							"type": "AzureKeyVaultSecret",
+							"store": {
+								"referenceName": "vault",
+								"type": "LinkedServiceReference"
+							},
+							"secretName": "github-pat"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/vault')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/api_code_scanning_alerts')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "github_rest_api",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"github_org": {
+						"type": "String",
+						"defaultValue": "octodemo"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "/orgs/octodemo/code-scanning/alerts?per_page=100",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/github_rest_api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/api_repos')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "github_rest_api",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"github_org": {
+						"type": "String",
+						"defaultValue": "octodemo"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "/orgs/octodemo/repos?per_page=100",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/github_rest_api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/api_secret_scanning_alerts')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "github_rest_api",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"github_org": {
+						"type": "String",
+						"defaultValue": "octodemo"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "/orgs/octodemo/secret-scanning/alerts?per_page=100",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/github_rest_api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/get_code_scanning_alerts')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "api_code_scanning_alerts",
+								"type": "DatasetReference"
+							},
+							"name": "alerts"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "sql_code_scanning_alerts",
+								"type": "DatasetReference"
+							},
+							"name": "database"
+						}
+					],
+					"transformations": [
+						{
+							"name": "deriveColumns"
+						},
+						{
+							"name": "selectColumns"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          body as (created_at as string, dismissed_at as string, dismissed_by as string, dismissed_comment as string, dismissed_reason as string, fixed_at as string, html_url as string, instances_url as string, most_recent_instance as (analysis_key as string, category as string, classifications as string[], commit_sha as string, environment as string, location as (end_column as integer, end_line as short, path as string, start_column as integer, start_line as short), message as (text as string), ref as string, state as string), number as short, repository as (archive_url as string, assignees_url as string, blobs_url as string, branches_url as string, collaborators_url as string, comments_url as string, commits_url as string, compare_url as string, contents_url as string, contributors_url as string, deployments_url as string, description as string, downloads_url as string, events_url as string, fork as boolean, forks_url as string, full_name as string, git_commits_url as string, git_refs_url as string, git_tags_url as string, hooks_url as string, html_url as string, id as integer, issue_comment_url as string, issue_events_url as string, issues_url as string, keys_url as string, labels_url as string, languages_url as string, merges_url as string, milestones_url as string, name as string, node_id as string, notifications_url as string, owner as (avatar_url as string, events_url as string, followers_url as string, following_url as string, gists_url as string, gravatar_id as string, html_url as string, id as integer, login as string, node_id as string, organizations_url as string, received_events_url as string, repos_url as string, site_admin as boolean, starred_url as string, subscriptions_url as string, type as string, url as string), private as boolean, pulls_url as string, releases_url as string, stargazers_url as string, statuses_url as string, subscribers_url as string, subscription_url as string, tags_url as string, teams_url as string, trees_url as string, url as string), rule as (description as string, id as string, name as string, security_severity_level as string, severity as string, tags as string[]), state as string, tool as (guid as string, name as string, version as string), updated_at as string, url as string),",
+						"          headers as [string,string]",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     httpMethod: 'GET',",
+						"     timeout: 30,",
+						"     requestInterval: 0,",
+						"     paginationRules: ['supportRFC5988' -> 'true'],",
+						"     responseFormat: ['type' -> 'json', 'documentForm' -> 'documentPerLine']) ~> alerts",
+						"selectColumns derive(date = currentDate(),",
+						"          unique_id = concat(toString(currentDate()), repo_full_name)) ~> deriveColumns",
+						"alerts select(mapColumn(",
+						"          created_at = body.created_at,",
+						"          dismissed_at = body.dismissed_at,",
+						"          dismissed_by = body.dismissed_by,",
+						"          dismissed_reason = body.dismissed_reason,",
+						"          fixed_at = body.fixed_at,",
+						"          number = body.number,",
+						"          repo_full_name = body.repository.full_name,",
+						"          repo_id = body.repository.id,",
+						"          rule_id = body.rule.id,",
+						"          rule_name = body.rule.name,",
+						"          security_severity_level = body.rule.security_severity_level,",
+						"          state = body.state,",
+						"          tool_name = body.tool.name,",
+						"          updated_at = body.updated_at",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectColumns",
+						"deriveColumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          created_at as string,",
+						"          dismissed_at as string,",
+						"          dismissed_by as string,",
+						"          dismissed_reason as string,",
+						"          fixed_at as string,",
+						"          number as integer,",
+						"          repo_full_name as string,",
+						"          repo_id as integer,",
+						"          rule_id as string,",
+						"          rule_name as string,",
+						"          security_severity_level as string,",
+						"          state as string,",
+						"          tool_name as string,",
+						"          updated_at as string,",
+						"          date as date,",
+						"          unique_id as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          created_at,",
+						"          dismissed_at,",
+						"          dismissed_by,",
+						"          dismissed_reason,",
+						"          fixed_at,",
+						"          number,",
+						"          repo_full_name,",
+						"          repo_id,",
+						"          rule_id,",
+						"          rule_name,",
+						"          security_severity_level,",
+						"          state,",
+						"          tool_name,",
+						"          updated_at,",
+						"          date,",
+						"          unique_id",
+						"     )) ~> database"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/api_code_scanning_alerts')]",
+				"[concat(variables('factoryId'), '/datasets/sql_code_scanning_alerts')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/get_repositories')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "api_repos",
+								"type": "DatasetReference"
+							},
+							"name": "repos"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "sql_repositories",
+								"type": "DatasetReference"
+							},
+							"name": "database"
+						}
+					],
+					"transformations": [
+						{
+							"name": "selectColumns"
+						},
+						{
+							"name": "derriveColumns"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          body as (allow_forking as boolean, archive_url as string, archived as boolean, assignees_url as string, blobs_url as string, branches_url as string, clone_url as string, collaborators_url as string, comments_url as string, commits_url as string, compare_url as string, contents_url as string, contributors_url as string, created_at as string, default_branch as string, deployments_url as string, description as string, disabled as boolean, downloads_url as string, events_url as string, fork as boolean, forks as short, forks_count as short, forks_url as string, full_name as string, git_commits_url as string, git_refs_url as string, git_tags_url as string, git_url as string, has_downloads as boolean, has_issues as boolean, has_pages as boolean, has_projects as boolean, has_wiki as boolean, homepage as string, hooks_url as string, html_url as string, id as integer, is_template as boolean, issue_comment_url as string, issue_events_url as string, issues_url as string, keys_url as string, labels_url as string, language as string, languages_url as string, license as (key as string, name as string, node_id as string, spdx_id as string, url as string), merges_url as string, milestones_url as string, mirror_url as string, name as string, node_id as string, notifications_url as string, open_issues as short, open_issues_count as short, owner as (avatar_url as string, events_url as string, followers_url as string, following_url as string, gists_url as string, gravatar_id as string, html_url as string, id as integer, login as string, node_id as string, organizations_url as string, received_events_url as string, repos_url as string, site_admin as boolean, starred_url as string, subscriptions_url as string, type as string, url as string), permissions as (admin as boolean, maintain as boolean, pull as boolean, push as boolean, triage as boolean), private as boolean, pulls_url as string, pushed_at as string, releases_url as string, size as integer, ssh_url as string, stargazers_count as short, stargazers_url as string, statuses_url as string, subscribers_url as string, subscription_url as string, svn_url as string, tags_url as string, teams_url as string, topics as string[], trees_url as string, updated_at as string, url as string, visibility as string, watchers as short, watchers_count as short, web_commit_signoff_required as boolean),",
+						"          headers as [string,string]",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     httpMethod: 'GET',",
+						"     timeout: 30,",
+						"     requestInterval: 0,",
+						"     paginationRules: ['supportRFC5988' -> 'true'],",
+						"     responseFormat: ['type' -> 'json', 'documentForm' -> 'documentPerLine']) ~> repos",
+						"repos select(mapColumn(",
+						"          archived = body.archived,",
+						"          created_at = body.created_at,",
+						"          default_branch = body.default_branch,",
+						"          full_name = body.full_name,",
+						"          id = body.id,",
+						"          language = body.language,",
+						"          languages_url = body.languages_url,",
+						"          name = body.name,",
+						"          pushed_at = body.pushed_at,",
+						"          size = body.size,",
+						"          topics = body.topics",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectColumns",
+						"selectColumns derive(date = currentDate(),",
+						"          unique_id = concat(toString(currentDate()), full_name)) ~> derriveColumns",
+						"derriveColumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          archived as boolean,",
+						"          created_at as timestamp,",
+						"          default_branch as string,",
+						"          full_name as string,",
+						"          id as integer,",
+						"          language as string,",
+						"          languages_url as string,",
+						"          name as string,",
+						"          pushed_at as timestamp,",
+						"          size as integer,",
+						"          topics as string,",
+						"          updated_at as timestamp,",
+						"          unique_id as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> database"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/api_repos')]",
+				"[concat(variables('factoryId'), '/datasets/sql_repositories')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/get_secret_scanning_alerts')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "api_secret_scanning_alerts",
+								"type": "DatasetReference"
+							},
+							"name": "alerts"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "sql_secret_scanning_alerts",
+								"type": "DatasetReference"
+							},
+							"name": "database"
+						}
+					],
+					"transformations": [
+						{
+							"name": "deriveColumns"
+						},
+						{
+							"name": "selectColumns"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          body as (created_at as string, html_url as string, locations_url as string, number as short, push_protection_bypassed as boolean, push_protection_bypassed_at as string, push_protection_bypassed_by as (avatar_url as string, events_url as string, followers_url as string, following_url as string, gists_url as string, gravatar_id as string, html_url as string, id as integer, login as string, node_id as string, organizations_url as string, received_events_url as string, repos_url as string, site_admin as boolean, starred_url as string, subscriptions_url as string, type as string, url as string), repository as (archive_url as string, assignees_url as string, blobs_url as string, branches_url as string, collaborators_url as string, comments_url as string, commits_url as string, compare_url as string, contents_url as string, contributors_url as string, deployments_url as string, description as string, downloads_url as string, events_url as string, fork as boolean, forks_url as string, full_name as string, git_commits_url as string, git_refs_url as string, git_tags_url as string, hooks_url as string, html_url as string, id as integer, issue_comment_url as string, issue_events_url as string, issues_url as string, keys_url as string, labels_url as string, languages_url as string, merges_url as string, milestones_url as string, name as string, node_id as string, notifications_url as string, owner as (avatar_url as string, events_url as string, followers_url as string, following_url as string, gists_url as string, gravatar_id as string, html_url as string, id as integer, login as string, node_id as string, organizations_url as string, received_events_url as string, repos_url as string, site_admin as boolean, starred_url as string, subscriptions_url as string, type as string, url as string), private as boolean, pulls_url as string, releases_url as string, stargazers_url as string, statuses_url as string, subscribers_url as string, subscription_url as string, tags_url as string, teams_url as string, trees_url as string, url as string), resolution as string, resolved_at as string, resolved_by as (avatar_url as string, events_url as string, followers_url as string, following_url as string, gists_url as string, gravatar_id as string, html_url as string, id as integer, login as string, node_id as string, organizations_url as string, received_events_url as string, repos_url as string, site_admin as boolean, starred_url as string, subscriptions_url as string, type as string, url as string), secret as string, secret_type as string, secret_type_display_name as string, state as string, updated_at as string, url as string),",
+						"          headers as [string,string]",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     httpMethod: 'GET',",
+						"     timeout: 30,",
+						"     requestInterval: 0,",
+						"     paginationRules: ['supportRFC5988' -> 'true'],",
+						"     responseFormat: ['type' -> 'json', 'documentForm' -> 'documentPerLine']) ~> alerts",
+						"selectColumns derive(date = currentDate(),",
+						"          unique_id = concat(toString(currentDate()), repo_full_name)) ~> deriveColumns",
+						"alerts select(mapColumn(",
+						"          created_at = body.created_at,",
+						"          number = body.number,",
+						"          push_protection_bypassed = body.push_protection_bypassed,",
+						"          push_protection_bypassed_login = body.push_protection_bypassed_by.login,",
+						"          repo_full_name = body.repository.full_name,",
+						"          resolution = body.resolution,",
+						"          resolved_by_login = body.resolved_by.login,",
+						"          resolved_at = body.resolved_at,",
+						"          secret_type_display_name = body.secret_type_display_name,",
+						"          updated_at = body.updated_at,",
+						"          state = body.state",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectColumns",
+						"deriveColumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          created_at,",
+						"          number,",
+						"          push_protection_bypassed,",
+						"          push_protection_bypassed_login,",
+						"          repo_full_name,",
+						"          resolution,",
+						"          resolved_by_login,",
+						"          resolved_at,",
+						"          secret_type_display_name,",
+						"          updated_at,",
+						"          date,",
+						"          unique_id,",
+						"          state",
+						"     )) ~> database"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/api_secret_scanning_alerts')]",
+				"[concat(variables('factoryId'), '/datasets/sql_secret_scanning_alerts')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ghas-pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "secret_scanning_alerts",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "get_secret_scanning_alerts",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"alerts": {
+										"github_org": "octodemo"
+									},
+									"database": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "repositories",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "get_repositories",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"repos": {
+										"github_org": "octodemo"
+									},
+									"database": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "code_scanning_alerts",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "get_code_scanning_alerts",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"alerts": {
+										"github_org": "octodemo"
+									},
+									"database": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-08-02T14:50:21Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/get_secret_scanning_alerts')]",
+				"[concat(variables('factoryId'), '/dataflows/get_repositories')]",
+				"[concat(variables('factoryId'), '/dataflows/get_code_scanning_alerts')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/daily_execution')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "ghas-pipeline",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2022-07-30T06:00:00",
+						"timeZone": "Central Standard Time",
+						"schedule": {}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ghas-pipeline')]"
+			]
+		}
+	]
+}
