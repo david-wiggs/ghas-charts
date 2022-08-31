@@ -137,7 +137,7 @@
 							}
 						},
 						{
-							"name": "Set codeql_configured column",
+							"name": "Set codeql_configured Column",
 							"type": "Script",
 							"dependsOn": [
 								{
@@ -168,7 +168,7 @@
 							"typeProperties": {
 								"scripts": [
 									{
-										"type": "Query",
+										"type": "NonQuery",
 										"text": {
 											"value": "UPDATE repositories SET codeql_configured = variables('codeql_configured') WHERE id = @{item().id}\n",
 											"type": "Expression"
