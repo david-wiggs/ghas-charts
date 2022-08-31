@@ -116,7 +116,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "if(contains(@{activity('Get Repository Languages').output.value}, javascript))",
+									"value": "if(contains(@{activity('Get Repository Languages').output.properties}, javascript))",
 									"type": "Expression"
 								}
 							}
