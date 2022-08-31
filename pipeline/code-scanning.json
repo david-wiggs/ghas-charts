@@ -63,7 +63,10 @@
 									"value": "https://api.github.com/repos/@{item().repo_full_name}/code-scanning/analyses",
 									"type": "Expression"
 								},
-								"method": "GET"
+								"method": "GET",
+								"headers": {
+									"User-Agent": "azure-data-factory"
+								}
 							}
 						}
 					]
