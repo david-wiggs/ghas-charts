@@ -48,7 +48,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": "https://data-pipeline-vault.vault.azure.net/secrets/github-pat/bea807beedad4792aefc47330a9d519e?api-version=7.0",
+					"url": "https://data-pipeline-vault.vault.azure.net/secrets/github-pat/3fe8eb3a7dc1480c9d0fdc25fdd210a5",
 					"method": "GET",
 					"authentication": {
 						"type": "MSI",
@@ -70,7 +70,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Get Repositories').output.value",
+						"value": "@activity('Get Repositories').output.firstRow",
 						"type": "Expression"
 					},
 					"isSequential": true,
