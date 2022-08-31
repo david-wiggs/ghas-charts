@@ -25,6 +25,212 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/code-scanning')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Repositories",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT * \nFROM repositories\nWHERE [date] = CONVERT(varchar, GETDATE(), 110)",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "sql_code_scanning_alerts",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Get Token",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Get Repositories",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": true,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://data-pipeline-vault.vault.azure.net/secrets/github-pat/bea807beedad4792aefc47330a9d519e?api-version=7.0",
+							"method": "GET",
+							"headers": {},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					},
+					{
+						"name": "For Each Repository",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Token",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Repositories').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Get CodeQL Analyses",
+									"type": "WebActivity",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": true
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "https://api.github.com/repos/@{item().full_name}/code-scanning/analyses?tool_name=CodeQL",
+											"type": "Expression"
+										},
+										"method": "GET",
+										"headers": {
+											"User-Agent": "azure-data-factory",
+											"Authorization": {
+												"value": "@activity('Get Token').output.value",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								{
+									"name": "CodeQL not Configured",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Get CodeQL Analyses",
+											"dependencyConditions": [
+												"Failed"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "codeql_configured",
+										"value": false
+									}
+								},
+								{
+									"name": "CodeQL configured",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Get CodeQL Analyses",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "codeql_configured",
+										"value": true
+									}
+								},
+								{
+									"name": "Set codeql_configured Column",
+									"type": "Script",
+									"dependsOn": [
+										{
+											"activity": "CodeQL configured",
+											"dependencyConditions": [
+												"Completed"
+											]
+										},
+										{
+											"activity": "CodeQL not Configured",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"linkedServiceName": {
+										"referenceName": "data",
+										"type": "LinkedServiceReference"
+									},
+									"typeProperties": {
+										"scripts": [
+											{
+												"type": "NonQuery",
+												"text": {
+													"value": "UPDATE repositories SET codeql_configured = variables('codeql_configured') WHERE id = @{item().id}\n",
+													"type": "Expression"
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"token": {
+						"type": "String"
+					},
+					"codeql_configured": {
+						"type": "Boolean"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/sql_code_scanning_alerts')]",
+				"[concat(variables('factoryId'), '/linkedServices/data')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ghas-pipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -131,6 +337,11 @@
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
+				"variables": {
+					"codeql_configured": {
+						"type": "Boolean"
+					}
+				},
 				"annotations": [],
 				"lastPublishTime": "2022-08-02T14:50:21Z"
 			},
@@ -138,98 +349,6 @@
 				"[concat(variables('factoryId'), '/dataflows/get_secret_scanning_alerts')]",
 				"[concat(variables('factoryId'), '/dataflows/get_repositories')]",
 				"[concat(variables('factoryId'), '/dataflows/get_code_scanning_alerts')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/code-scanning')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "code_scanning_alerts",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "AzureSqlSource",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "sql_code_scanning_alerts",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": false
-						}
-					},
-					{
-						"name": "ForEach1",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "code_scanning_alerts",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('code_scanning_alerts').output.value",
-								"type": "Expression"
-							},
-							"activities": [
-								{
-									"name": "Web1",
-									"type": "WebActivity",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"url": {
-											"value": "@/repos/item()/code-scanning/analyses",
-											"type": "Expression"
-										},
-										"method": "GET",
-										"headers": {},
-										"linkedServices": [
-											{
-												"referenceName": "github_rest_api",
-												"type": "LinkedServiceReference"
-											}
-										]
-									}
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/sql_code_scanning_alerts')]",
-				"[concat(variables('factoryId'), '/linkedServices/github_rest_api')]"
 			]
 		},
 		{
