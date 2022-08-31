@@ -73,7 +73,7 @@
 						"value": "@activity('Get Repositories').output.value",
 						"type": "Expression"
 					},
-					"isSequential": false,
+					"isSequential": true,
 					"activities": [
 						{
 							"name": "Get Repository Languages",
@@ -116,7 +116,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "if(contains(@{activity('Get Repository Languages').output.properties}, javascript))",
+									"value": "if(contains(@{activity('Get Repository Languages').output}, javascript))",
 									"type": "Expression"
 								}
 							}
