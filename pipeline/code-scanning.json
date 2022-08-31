@@ -25,7 +25,7 @@
 						"referenceName": "sql_code_scanning_alerts",
 						"type": "DatasetReference"
 					},
-					"firstRowOnly": false
+					"firstRowOnly": true
 				}
 			},
 			{
