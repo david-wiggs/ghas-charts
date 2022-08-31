@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "code_scanning_alerts",
+				"name": "code-scanning-alerts",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -32,7 +32,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "code_scanning_alerts",
+						"activity": "code-scanning-alerts",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -41,9 +41,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('code_scanning_alerts').output.value",
+						"value": "@activity('code-scanning-alerts').output.value",
 						"type": "Expression"
 					},
+					"isSequential": true,
 					"activities": [
 						{
 							"name": "Web1",
