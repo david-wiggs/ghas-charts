@@ -70,7 +70,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Get Repositories').output.firstRow",
+						"value": "@activity('Get Repositories').output",
 						"type": "Expression"
 					},
 					"isSequential": true,
