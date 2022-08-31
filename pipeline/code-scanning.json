@@ -116,7 +116,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "codeql_configured",
-								"value": false
+								"value": "0"
 							}
 						},
 						{
@@ -133,7 +133,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "codeql_configured",
-								"value": true
+								"value": "1"
 							}
 						},
 						{
@@ -182,11 +182,8 @@
 			}
 		],
 		"variables": {
-			"token": {
-				"type": "String"
-			},
 			"codeql_configured": {
-				"type": "Boolean"
+				"type": "String"
 			}
 		},
 		"annotations": []
