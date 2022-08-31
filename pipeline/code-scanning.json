@@ -48,7 +48,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": "https://data-pipeline-vault.vault.azure.net/secrets/github-pat/bea807beedad4792aefc47330a9d519e?api-version=7.0",
+					"url": "https://data-pipeline-vault.vault.azure.net/secrets/github-pat/3fe8eb3a7dc1480c9d0fdc25fdd210a5",
 					"method": "GET",
 					"authentication": {
 						"type": "MSI",
@@ -134,6 +134,47 @@
 							"typeProperties": {
 								"variableName": "codeql_configured",
 								"value": true
+							}
+						},
+						{
+							"name": "Script1",
+							"type": "Script",
+							"dependsOn": [
+								{
+									"activity": "CodeQL configured",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								},
+								{
+									"activity": "CodeQL not Configured",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "data",
+								"type": "LinkedServiceReference"
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query",
+										"text": {
+											"value": "UPDATE repositories SET codeql_configured = variables('codeql_configured') WHERE id = @{item().id}\n",
+											"type": "Expression"
+										}
+									}
+								]
 							}
 						}
 					]
