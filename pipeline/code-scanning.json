@@ -51,7 +51,7 @@
 					"method": "GET",
 					"authentication": {
 						"type": "MSI",
-						"resource": "https://management.azure.com/"
+						"resource": "https://vault.azure.net"
 					}
 				}
 			}
