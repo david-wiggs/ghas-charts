@@ -48,7 +48,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": "https://data-pipeline-vault.vault.azure.net/secrets/github-pat/bea807beedad4792aefc47330a9d519e?api-version=7.0",
+					"url": "https://data-pipeline-vault.vault.azure.net/secrets/github-pat/3fe8eb3a7dc1480c9d0fdc25fdd210a5",
 					"method": "GET",
 					"authentication": {
 						"type": "MSI",
@@ -103,51 +103,11 @@
 							}
 						},
 						{
-							"name": "CodeQL not Configured",
-							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "Get CodeQL Analyses",
-									"dependencyConditions": [
-										"Failed"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "codeql_configured",
-								"value": "0"
-							}
-						},
-						{
-							"name": "CodeQL configured",
-							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "Get CodeQL Analyses",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "codeql_configured",
-								"value": "1"
-							}
-						},
-						{
-							"name": "Set codeql_configured Column",
+							"name": "Set codeql_configured to true",
 							"type": "Script",
 							"dependsOn": [
 								{
-									"activity": "CodeQL configured",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								},
-								{
-									"activity": "CodeQL not Configured",
+									"activity": "Get CodeQL Analyses",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -170,7 +130,42 @@
 									{
 										"type": "NonQuery",
 										"text": {
-											"value": "UPDATE repositories SET codeql_configured = variables('codeql_configured') WHERE id = @{item().id}\n",
+											"value": "UPDATE repositories SET codeql_configured = 1 WHERE id = @{item().id}\n",
+											"type": "Expression"
+										}
+									}
+								]
+							}
+						},
+						{
+							"name": "Set codeql_configured to false",
+							"type": "Script",
+							"dependsOn": [
+								{
+									"activity": "Get CodeQL Analyses",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "data",
+								"type": "LinkedServiceReference"
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "NonQuery",
+										"text": {
+											"value": "UPDATE repositories SET codeql_configured = 0 WHERE id = @{item().id}\n",
 											"type": "Expression"
 										}
 									}
