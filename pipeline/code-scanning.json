@@ -42,7 +42,7 @@
 					"timeout": "0.12:00:00",
 					"retry": 0,
 					"retryIntervalInSeconds": 30,
-					"secureOutput": true,
+					"secureOutput": false,
 					"secureInput": false
 				},
 				"userProperties": [],
@@ -83,7 +83,7 @@
 								"retry": 0,
 								"retryIntervalInSeconds": 30,
 								"secureOutput": false,
-								"secureInput": true
+								"secureInput": false
 							},
 							"userProperties": [],
 							"typeProperties": {
@@ -95,7 +95,7 @@
 								"headers": {
 									"User-Agent": "azure-data-factory",
 									"Authorization": {
-										"value": "@activity('get-token').SecureOutput.value",
+										"value": "@activity('get-token').output.value",
 										"type": "Expression"
 									}
 								}
