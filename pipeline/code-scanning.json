@@ -89,7 +89,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "https://api.github.com/repos/@{item().repo_full_name}/code-scanning/analyses?tool_name=CodeQL",
+									"value": "https://api.github.com/repos/@{item().full_name}/code-scanning/analyses?tool_name=CodeQL",
 									"type": "Expression"
 								},
 								"method": "GET",
