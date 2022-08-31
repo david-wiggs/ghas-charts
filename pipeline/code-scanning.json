@@ -95,7 +95,7 @@
 								"headers": {
 									"User-Agent": "azure-data-factory",
 									"Authorization": {
-										"value": "@activity('get-token').output",
+										"value": "@activity('get-token').output.value",
 										"type": "Expression"
 									}
 								}
