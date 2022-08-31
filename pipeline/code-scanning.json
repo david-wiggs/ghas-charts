@@ -73,7 +73,7 @@
 						"value": "@activity('Get Repositories').output.value",
 						"type": "Expression"
 					},
-					"isSequential": false,
+					"isSequential": true,
 					"activities": [
 						{
 							"name": "Get CodeQL Analyses",
@@ -137,7 +137,7 @@
 							}
 						},
 						{
-							"name": "Script1",
+							"name": "Set codeql_configured column",
 							"type": "Script",
 							"dependsOn": [
 								{
