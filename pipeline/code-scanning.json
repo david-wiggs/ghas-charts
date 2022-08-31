@@ -22,10 +22,10 @@
 						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "sql_code_scanning_alerts",
+						"referenceName": "sql_repositories",
 						"type": "DatasetReference"
 					},
-					"firstRowOnly": true
+					"firstRowOnly": false
 				}
 			},
 			{
