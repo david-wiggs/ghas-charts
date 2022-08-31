@@ -47,7 +47,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": "https://data-pipeline-vault.vault.azure.net/secrets/github-pat/3fe8eb3a7dc1480c9d0fdc25fdd210a5?api-version=7.0",
+					"url": "https://data-pipeline-vault.vault.azure.net/secrets/github-pat/e0bd29dd6b3642be9711290625313609?api-version=7.0",
 					"method": "GET",
 					"authentication": {
 						"type": "MSI",
