@@ -50,7 +50,7 @@
 								"partitionOption": "None"
 							},
 							"dataset": {
-								"referenceName": "sql_code_scanning_alerts",
+								"referenceName": "sql_repositories",
 								"type": "DatasetReference",
 								"parameters": {}
 							},
@@ -103,7 +103,7 @@
 								"value": "@activity('Get Repositories').output.value",
 								"type": "Expression"
 							},
-							"isSequential": true,
+							"isSequential": false,
 							"activities": [
 								{
 									"name": "Get CodeQL Analyses",
@@ -133,53 +133,13 @@
 									}
 								},
 								{
-									"name": "CodeQL not Configured",
-									"type": "SetVariable",
-									"dependsOn": [
-										{
-											"activity": "Get CodeQL Analyses",
-											"dependencyConditions": [
-												"Failed"
-											]
-										}
-									],
-									"userProperties": [],
-									"typeProperties": {
-										"variableName": "codeql_configured",
-										"value": "0"
-									}
-								},
-								{
-									"name": "CodeQL configured",
-									"type": "SetVariable",
+									"name": "Set codeql_configured to true",
+									"type": "Script",
 									"dependsOn": [
 										{
 											"activity": "Get CodeQL Analyses",
 											"dependencyConditions": [
 												"Succeeded"
-											]
-										}
-									],
-									"userProperties": [],
-									"typeProperties": {
-										"variableName": "codeql_configured",
-										"value": "1"
-									}
-								},
-								{
-									"name": "Set codeql_configured Column",
-									"type": "Script",
-									"dependsOn": [
-										{
-											"activity": "CodeQL configured",
-											"dependencyConditions": [
-												"Completed"
-											]
-										},
-										{
-											"activity": "CodeQL not Configured",
-											"dependencyConditions": [
-												"Completed"
 											]
 										}
 									],
@@ -200,7 +160,42 @@
 											{
 												"type": "NonQuery",
 												"text": {
-													"value": "UPDATE repositories SET codeql_configured = variables('codeql_configured') WHERE id = @{item().id}\n",
+													"value": "UPDATE repositories SET codeql_configured = 1 WHERE id = @{item().id}\n",
+													"type": "Expression"
+												}
+											}
+										]
+									}
+								},
+								{
+									"name": "Set codeql_configured to false",
+									"type": "Script",
+									"dependsOn": [
+										{
+											"activity": "Get CodeQL Analyses",
+											"dependencyConditions": [
+												"Failed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"linkedServiceName": {
+										"referenceName": "data",
+										"type": "LinkedServiceReference"
+									},
+									"typeProperties": {
+										"scripts": [
+											{
+												"type": "NonQuery",
+												"text": {
+													"value": "UPDATE repositories SET codeql_configured = 0 WHERE id = @{item().id}\n",
 													"type": "Expression"
 												}
 											}
@@ -216,17 +211,14 @@
 					"cancelAfter": {}
 				},
 				"variables": {
-					"token": {
-						"type": "String"
-					},
 					"codeql_configured": {
-						"type": "Boolean"
+						"type": "String"
 					}
 				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/sql_code_scanning_alerts')]",
+				"[concat(variables('factoryId'), '/datasets/sql_repositories')]",
 				"[concat(variables('factoryId'), '/linkedServices/data')]"
 			]
 		},
@@ -331,6 +323,27 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "codeql_configuration",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "repositories",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "code-scanning",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"policy": {
@@ -339,7 +352,7 @@
 				},
 				"variables": {
 					"codeql_configured": {
-						"type": "Boolean"
+						"type": "String"
 					}
 				},
 				"annotations": [],
@@ -348,7 +361,8 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/get_secret_scanning_alerts')]",
 				"[concat(variables('factoryId'), '/dataflows/get_repositories')]",
-				"[concat(variables('factoryId'), '/dataflows/get_code_scanning_alerts')]"
+				"[concat(variables('factoryId'), '/dataflows/get_code_scanning_alerts')]",
+				"[concat(variables('factoryId'), '/pipelines/code-scanning')]"
 			]
 		},
 		{
