@@ -143,13 +143,13 @@
 								{
 									"activity": "CodeQL configured",
 									"dependencyConditions": [
-										"Succeeded"
+										"Completed"
 									]
 								},
 								{
 									"activity": "CodeQL not Configured",
 									"dependencyConditions": [
-										"Succeeded"
+										"Completed"
 									]
 								}
 							],
