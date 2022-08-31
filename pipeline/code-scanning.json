@@ -60,16 +60,10 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "@/repos/item()/code-scanning/analyses",
+									"value": "@https://api.github.com/repos/item().repo_full_name/code-scanning/analyses",
 									"type": "Expression"
 								},
-								"method": "GET",
-								"linkedServices": [
-									{
-										"referenceName": "github_rest_api",
-										"type": "LinkedServiceReference"
-									}
-								]
+								"method": "GET"
 							}
 						}
 					]
