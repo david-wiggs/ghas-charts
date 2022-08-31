@@ -116,7 +116,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "codeql_configured",
-								"value": "0"
+								"value": false
 							}
 						},
 						{
@@ -133,7 +133,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "codeql_configured",
-								"value": "1"
+								"value": true
 							}
 						},
 						{
