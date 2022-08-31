@@ -269,94 +269,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/api_code_scanning_alerts')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "github_rest_api",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"github_org": {
-						"type": "String",
-						"defaultValue": "octodemo"
-					}
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": {
-						"value": "/orgs/octodemo/code-scanning/alerts?per_page=100",
-						"type": "Expression"
-					}
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/github_rest_api')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/api_repos')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "github_rest_api",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"github_org": {
-						"type": "String",
-						"defaultValue": "octodemo"
-					}
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": {
-						"value": "/orgs/octodemo/repos?per_page=100",
-						"type": "Expression"
-					}
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/github_rest_api')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/api_secret_scanning_alerts')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "github_rest_api",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"github_org": {
-						"type": "String",
-						"defaultValue": "octodemo"
-					}
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": {
-						"value": "/orgs/octodemo/secret-scanning/alerts?per_page=100",
-						"type": "Expression"
-					}
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/github_rest_api')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"name": "[concat(parameters('factoryName'), '/code-scanning')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -444,6 +357,93 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/sql_code_scanning_alerts')]",
+				"[concat(variables('factoryId'), '/linkedServices/github_rest_api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/api_code_scanning_alerts')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "github_rest_api",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"github_org": {
+						"type": "String",
+						"defaultValue": "octodemo"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "/orgs/octodemo/code-scanning/alerts?per_page=100",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/github_rest_api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/api_repos')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "github_rest_api",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"github_org": {
+						"type": "String",
+						"defaultValue": "octodemo"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "/orgs/octodemo/repos?per_page=100",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/github_rest_api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/api_secret_scanning_alerts')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "github_rest_api",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"github_org": {
+						"type": "String",
+						"defaultValue": "octodemo"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "/orgs/octodemo/secret-scanning/alerts?per_page=100",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/github_rest_api')]"
 			]
 		},
