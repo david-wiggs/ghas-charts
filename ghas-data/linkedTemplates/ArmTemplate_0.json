@@ -269,6 +269,51 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Set codeql_configured Column",
+						"type": "Script",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "data",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "NonQuery",
+									"text": {
+										"value": "UPDATE repositories SET codeql_configured = 1 WHERE id = 308405393\n",
+										"type": "Expression"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/code-scanning')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -390,7 +435,7 @@
 									"userProperties": [],
 									"typeProperties": {
 										"variableName": "codeql_configured",
-										"value": false
+										"value": "0"
 									}
 								},
 								{
@@ -407,7 +452,7 @@
 									"userProperties": [],
 									"typeProperties": {
 										"variableName": "codeql_configured",
-										"value": true
+										"value": "1"
 									}
 								},
 								{
