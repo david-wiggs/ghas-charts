@@ -65,7 +65,8 @@
 								},
 								"method": "GET",
 								"headers": {
-									"User-Agent": "azure-data-factory"
+									"User-Agent": "azure-data-factory",
+									"Authorization": "token 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"
 								}
 							}
 						}
