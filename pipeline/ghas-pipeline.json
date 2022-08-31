@@ -88,8 +88,33 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "codeql_configuration",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "repositories",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "code-scanning",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
 			}
 		],
+		"variables": {
+			"codeql_configured": {
+				"type": "String"
+			}
+		},
 		"annotations": [],
 		"lastPublishTime": "2022-08-02T14:50:21Z"
 	},
