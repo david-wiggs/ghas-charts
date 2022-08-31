@@ -60,7 +60,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "@https://api.github.com/repos/item().repo_full_name/code-scanning/analyses",
+									"value": "https://api.github.com/repos/@{item().repo_full_name}/code-scanning/analyses",
 									"type": "Expression"
 								},
 								"method": "GET"
