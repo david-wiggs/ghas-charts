@@ -60,7 +60,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Set variable1",
+						"activity": "get-token",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -83,7 +83,7 @@
 								"retry": 0,
 								"retryIntervalInSeconds": 30,
 								"secureOutput": false,
-								"secureInput": false
+								"secureInput": true
 							},
 							"userProperties": [],
 							"typeProperties": {
@@ -95,33 +95,13 @@
 								"headers": {
 									"User-Agent": "azure-data-factory",
 									"Authorization": {
-										"value": "@variables('token')",
+										"value": "@activity('get-token').output.value",
 										"type": "Expression"
 									}
 								}
 							}
 						}
 					]
-				}
-			},
-			{
-				"name": "Set variable1",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "get-token",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "token",
-					"value": {
-						"value": "@activity('get-token').output.value",
-						"type": "Expression"
-					}
 				}
 			}
 		],
