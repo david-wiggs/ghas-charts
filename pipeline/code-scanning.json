@@ -28,8 +28,8 @@
 				}
 			},
 			{
-				"name": "ForEach1",
-				"type": "ForEach",
+				"name": "get-token",
+				"type": "WebActivity",
 				"dependsOn": [
 					{
 						"activity": "Lookup1",
@@ -38,39 +38,21 @@
 						]
 					}
 				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"items": {
-						"value": "@activity('Lookup1').output.value",
-						"type": "Expression"
-					},
-					"isSequential": true,
-					"activities": [
-						{
-							"name": "Web1",
-							"type": "WebActivity",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"url": {
-									"value": "https://api.github.com/repos/@{item().repo_full_name}/code-scanning/analyses",
-									"type": "Expression"
-								},
-								"method": "GET",
-								"headers": {
-									"User-Agent": "azure-data-factory",
-									"Authorization": "token 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"
-								}
-							}
-						}
-					]
+					"url": "https://data-pipeline-vault.vault.azure.net/secrets/github-pat/3fe8eb3a7dc1480c9d0fdc25fdd210a5",
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://management.azure.com/"
+					}
 				}
 			}
 		],
