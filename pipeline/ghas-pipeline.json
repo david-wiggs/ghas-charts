@@ -103,7 +103,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "code-scanning",
+						"referenceName": "codeql-configuration",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
