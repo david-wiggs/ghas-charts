@@ -116,7 +116,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@greater(activity('Get Repository Languages').output?.javascript, 0)",
+									"value": "@not(equals(activity('Get Repository Languages').output?.javascript, null))",
 									"type": "Expression"
 								}
 							}
