@@ -116,7 +116,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@contains(activity('Get Repository Languages').output, 'javascript')",
+									"value": "@contains(activity('Get Repository Languages').output.Response, 'javascript')",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
