@@ -17,6 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT * \nFROM repositories\nWHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110)",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
