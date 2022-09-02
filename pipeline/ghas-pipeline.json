@@ -122,6 +122,10 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"pipeline": {
+						"referenceName": "codeql-supported",
+						"type": "PipelineReference"
+					},
 					"waitOnCompletion": true
 				}
 			}
