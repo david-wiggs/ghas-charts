@@ -160,7 +160,7 @@
 											{
 												"type": "NonQuery",
 												"text": {
-													"value": "UPDATE repositories SET codeql_configured = 1 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}\n",
+													"value": "UPDATE repositories SET codeql_configured = 1 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}",
 													"type": "Expression"
 												}
 											}
@@ -195,7 +195,7 @@
 											{
 												"type": "NonQuery",
 												"text": {
-													"value": "UPDATE repositories SET codeql_configured = 0 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}\n",
+													"value": "UPDATE repositories SET codeql_configured = 0 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}",
 													"type": "Expression"
 												}
 											}
@@ -223,7 +223,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/codeql-eligability')]",
+			"name": "[concat(parameters('factoryName'), '/codeql-supported')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -301,7 +301,7 @@
 								"value": "@activity('Get Repositories').output.value",
 								"type": "Expression"
 							},
-							"isSequential": true,
+							"isSequential": false,
 							"activities": [
 								{
 									"name": "Get Repository Languages",
@@ -344,9 +344,63 @@
 									"userProperties": [],
 									"typeProperties": {
 										"expression": {
-											"value": "@or(\n    or(\n        or(not(equals(activity('Get Repository Languages').output?.JavaScript, null)), not(equals(activity('Get Repository Languages').output?.TypeScript, null))),\n        not(equals(activity('Get Repository Languages').output?.Python, null))),\n        not(equals(activity('Get Repository Languages').output?.Ruby, null))\n)",
+											"value": "@or(\n    or(\n        or(\n            or(\n                or(\n                    or(\n                        or(\n                            or(contains(activity('Get Repository Languages').output, 'JavaScript'), contains(activity('Get Repository Languages').output, 'TypeScript')),\n                        contains(activity('Get Repository Languages').output, 'Python')), \n                    contains(activity('Get Repository Languages').output, 'Ruby')), \n                contains(activity('Get Repository Languages').output, 'Go')), \n            contains(activity('Get Repository Languages').output, 'Java')), \n        contains(activity('Get Repository Languages').output, 'C#')), \n    contains(activity('Get Repository Languages').output, 'C++')), \ncontains(activity('Get Repository Languages').output, 'C'))",
 											"type": "Expression"
-										}
+										},
+										"ifFalseActivities": [
+											{
+												"name": "Set codeql_supported column to 0",
+												"type": "Script",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"linkedServiceName": {
+													"referenceName": "data",
+													"type": "LinkedServiceReference"
+												},
+												"typeProperties": {
+													"scripts": [
+														{
+															"type": "NonQuery",
+															"text": "UPDATE repositories SET codeql_supported = 0 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}"
+														}
+													]
+												}
+											}
+										],
+										"ifTrueActivities": [
+											{
+												"name": "Set codeql_supported column to 1",
+												"type": "Script",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"linkedServiceName": {
+													"referenceName": "data",
+													"type": "LinkedServiceReference"
+												},
+												"typeProperties": {
+													"scripts": [
+														{
+															"type": "NonQuery",
+															"text": "UPDATE repositories SET codeql_supported = 1 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}"
+														}
+													]
+												}
+											}
+										]
 									}
 								}
 							]
@@ -365,7 +419,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/sql_repositories')]"
+				"[concat(variables('factoryId'), '/datasets/sql_repositories')]",
+				"[concat(variables('factoryId'), '/linkedServices/data')]"
 			]
 		},
 		{
@@ -471,7 +526,7 @@
 						}
 					},
 					{
-						"name": "codeql_configuration",
+						"name": "codeql-configuration",
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
@@ -485,6 +540,27 @@
 						"typeProperties": {
 							"pipeline": {
 								"referenceName": "codeql-configuration",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "codeql-supported",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "repositories",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "codeql-supported",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
@@ -508,7 +584,8 @@
 				"[concat(variables('factoryId'), '/dataflows/get_secret_scanning_alerts')]",
 				"[concat(variables('factoryId'), '/dataflows/get_repositories')]",
 				"[concat(variables('factoryId'), '/dataflows/get_code_scanning_alerts')]",
-				"[concat(variables('factoryId'), '/pipelines/codeql-configuration')]"
+				"[concat(variables('factoryId'), '/pipelines/codeql-configuration')]",
+				"[concat(variables('factoryId'), '/pipelines/codeql-supported')]"
 			]
 		},
 		{
