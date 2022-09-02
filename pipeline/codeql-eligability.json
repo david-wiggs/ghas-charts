@@ -116,7 +116,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@not(equals(activity('Get Repository Languages').output?.javascript, null))",
+									"value": "@or(\n    or(\n        or(not(equals(activity('Get Repository Languages').output?.JavaScript, null)), not(equals(activity('Get Repository Languages').output?.TypeScript, null))),\n        not(equals(activity('Get Repository Languages').output?.Python, null))),\n        not(equals(activity('Get Repository Languages').output?.Ruby, null))\n)",
 									"type": "Expression"
 								}
 							}
