@@ -25,7 +25,7 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/code-scanning')]",
+			"name": "[concat(parameters('factoryName'), '/codeql-configuration')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -45,7 +45,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": "SELECT * \nFROM repositories\nWHERE [date] = CONVERT(varchar, GETDATE(), 110)",
+								"sqlReaderQuery": "SELECT * \nFROM repositories\nWHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110)",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -160,7 +160,7 @@
 											{
 												"type": "NonQuery",
 												"text": {
-													"value": "UPDATE repositories SET codeql_configured = 1 WHERE id = @{item().id}\n",
+													"value": "UPDATE repositories SET codeql_configured = 1 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}\n",
 													"type": "Expression"
 												}
 											}
@@ -195,7 +195,7 @@
 											{
 												"type": "NonQuery",
 												"text": {
-													"value": "UPDATE repositories SET codeql_configured = 0 WHERE id = @{item().id}\n",
+													"value": "UPDATE repositories SET codeql_configured = 0 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}\n",
 													"type": "Expression"
 												}
 											}
@@ -220,6 +220,152 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/sql_repositories')]",
 				"[concat(variables('factoryId'), '/linkedServices/data')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/codeql-eligability')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Repositories",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT * \nFROM repositories\nWHERE [date] = CONVERT(varchar, GETDATE(), 110)",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "sql_repositories",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Get Token",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Get Repositories",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": true,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://data-pipeline-vault.vault.azure.net/secrets/github-pat/bea807beedad4792aefc47330a9d519e?api-version=7.0",
+							"method": "GET",
+							"headers": {},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					},
+					{
+						"name": "For Each Repository",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Token",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Repositories').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Get Repository Languages",
+									"type": "WebActivity",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": true
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "@item().languages_url",
+											"type": "Expression"
+										},
+										"method": "GET",
+										"headers": {
+											"User-Agent": "azure-data-factory",
+											"Authorization": {
+												"value": "@activity('Get Token').output.value",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								{
+									"name": "CodeQL Supported Languages",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "Get Repository Languages",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@or(\n    or(\n        or(not(equals(activity('Get Repository Languages').output?.JavaScript, null)), not(equals(activity('Get Repository Languages').output?.TypeScript, null))),\n        not(equals(activity('Get Repository Languages').output?.Python, null))),\n        not(equals(activity('Get Repository Languages').output?.Ruby, null))\n)",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"codeql_configured": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/sql_repositories')]"
 			]
 		},
 		{
@@ -338,7 +484,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "code-scanning",
+								"referenceName": "codeql-configuration",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
@@ -362,7 +508,7 @@
 				"[concat(variables('factoryId'), '/dataflows/get_secret_scanning_alerts')]",
 				"[concat(variables('factoryId'), '/dataflows/get_repositories')]",
 				"[concat(variables('factoryId'), '/dataflows/get_code_scanning_alerts')]",
-				"[concat(variables('factoryId'), '/pipelines/code-scanning')]"
+				"[concat(variables('factoryId'), '/pipelines/codeql-configuration')]"
 			]
 		},
 		{
@@ -1036,51 +1182,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/api_secret_scanning_alerts')]",
 				"[concat(variables('factoryId'), '/datasets/sql_secret_scanning_alerts')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Set codeql_configured Column",
-						"type": "Script",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"linkedServiceName": {
-							"referenceName": "data",
-							"type": "LinkedServiceReference"
-						},
-						"typeProperties": {
-							"scripts": [
-								{
-									"type": "NonQuery",
-									"text": {
-										"value": "UPDATE repositories SET codeql_configured = 1 WHERE id = 308405393\n",
-										"type": "Expression"
-									}
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/data')]"
 			]
 		}
 	]
