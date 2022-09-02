@@ -130,7 +130,7 @@
 									{
 										"type": "NonQuery",
 										"text": {
-											"value": "UPDATE repositories SET codeql_configured = 1 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}\n",
+											"value": "UPDATE repositories SET codeql_configured = 1 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}",
 											"type": "Expression"
 										}
 									}
@@ -165,7 +165,7 @@
 									{
 										"type": "NonQuery",
 										"text": {
-											"value": "UPDATE repositories SET codeql_configured = 0 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}\n",
+											"value": "UPDATE repositories SET codeql_configured = 0 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}",
 											"type": "Expression"
 										}
 									}
