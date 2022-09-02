@@ -116,9 +116,36 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@or(\n    or(\n        or(not(equals(activity('Get Repository Languages').output?.JavaScript, null)), not(equals(activity('Get Repository Languages').output?.TypeScript, null))),\n        not(equals(activity('Get Repository Languages').output?.Python, null))),\n        not(equals(activity('Get Repository Languages').output?.Ruby, null))\n)",
+									"value": "@or(\n    or(\n        or(\n            or(\n                or(\n                    or(\n                        or(\n                            or(not(equals(activity('Get Repository Languages').output?.JavaScript, null)), not(equals(activity('Get Repository Languages').output?.TypeScript, null))),\n                        not(equals(activity('Get Repository Languages').output?.Python, null))),\n                    not(equals(activity('Get Repository Languages').output?.Ruby, null))),\n                not(equals(activity('Get Repository Languages').output?.Java, null))),\n            not(equals(activity('Get Repository Languages').output?.Go, null))),\n        not(equals(activity('Get Repository Languages').output?.C, null))),\n    not(equals(activity('Get Repository Languages').output?.C++, null))),\nnot(equals(activity('Get Repository Languages').output?.C#, null)))",
 									"type": "Expression"
-								}
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Script1",
+										"type": "Script",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"linkedServiceName": {
+											"referenceName": "data",
+											"type": "LinkedServiceReference"
+										},
+										"typeProperties": {
+											"scripts": [
+												{
+													"type": "NonQuery",
+													"text": "UPDATE repositories SET codeql_configured = 1 WHERE [date] = CONVERT(varchar, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Central Standard Time', 110) AND id = @{item().id}"
+												}
+											]
+										}
+									}
+								]
 							}
 						}
 					]
